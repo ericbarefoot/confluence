@@ -1,0 +1,164 @@
+
+/* Sandpiper Stylesheet - for use with Dash GUIs */
+
+.alertLabel {
+  color: #ff0000;
+  font-weight: bold;
+}
+
+.OKLabel {
+  color:rgb(0, 150, 12);
+  font-style: italic;
+}
+
+.greenLabel{
+  color:rgb(0, 150, 12);
+  font-weight: bold;
+}
+
+.redLabel{
+  color: #ff0000;
+}
+
+.blackLabel{
+  color: black;
+}
+
+.indicatorImage{
+  height: 30px;
+  width: 30px;
+  display: flex;
+  justify-content: center;
+  margin:1px;
+}
+
+.grid-container {
+    min-width: 600px;
+    width: 100%;
+    overflow-x: auto;
+}
+
+.divBorder {
+    border: 1px solid black;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 2px;
+    min-width: 400px;
+}
+
+.divBorder_25percWidth {
+  /* display:flex; */
+  flex: 1 1 25%;
+  border: 1px solid black;
+  padding: 10px;
+  margin: 2px;
+  border-radius: 5px;
+  /* width: 25%; */
+  /* min-width: 200px; */
+  /* flex-direction: column; */
+  /* flex: 0 1; */
+  height: auto
+}
+
+.divBorder_75percWidth {
+  flex: 1 1 75%;
+  /* display:flex; */
+  border: 1px solid black;
+  padding: 10px;
+  margin: 2px;
+  border-radius: 5px;
+  /* width: 75%; */
+  /* min-width: 500px; */
+  /* flex-direction: column; */
+  /* flex: 0 1; */
+  height: auto;
+}
+
+
+.divHorizontal {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  /* align-items: center; */ 
+  /* height:max-content; */
+}
+
+.divCentered {
+  /* display: flex; */
+  /* flex-direction: column; */
+  justify-content: center;
+}
+
+.divOverall {
+  display: flex;
+  flex-direction: column;
+  /* flex:1 1 100%; */
+  width:95vw;
+}
+
+.button{
+  margin: 2px;
+}
+
+.htmlButton{
+  border:none;
+  background-color: white;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  margin:5px;
+}
+
+.plots{
+  /*min-width: 900px;*/
+  margin: 0px;
+  padding: 0px;
+}
+
+.link{
+  padding: 2em 3em;
+  background-color: pink;
+  color: black;
+}
+
+.datatable{
+  margin:5px;
+
+}
+
+.datatable_box{
+  display:flex;
+  width:30%;
+  flex-direction: column;
+  border-right:1px solid black;
+  border-left:1px solid black;
+  border-top:1px solid black;
+  margin-bottom:10px;
+}
+
+.datatable_row{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  border-bottom:1px solid black;
+}
+
+html {
+  font-size: 62.5%; }
+body {
+  display: flex;
+  justify-content: center;
+  font-size: 1.5em; /* currently ems cause chrome bug misinterpreting rems on body element */
+  line-height: 1.6;
+  font-weight: 400;
+  font-family: "Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: rgb(50, 50, 50); 
+  margin:0;
+  padding:0;
+  width: 100%;
+}
+
+h3 {
+  margin-top: 0px;
+  margin-bottom: 2px;
+}
