@@ -1,1 +1,19 @@
-{"MODBUS over RS-485": {"com port": "COM4", "baudrate": 9600, "bits": 8, "parity": "N", "stopbits": 1, "serverID": 1}}
+{
+    "MODBUS over RS-485": {
+        "device name": "Pump VFD",
+        "comms": {
+            "com port": "COM4",
+            "baudrate": 9600,
+            "bits": 8,
+            "parity": "N",
+            "stopbits": 1,
+            "serverID": 5
+        },
+        "publish": {
+            "VFD Freq Set Point": 400001,
+            "VFD Current Freq": 400002,
+            "Running": 1,
+            "Run Direction": 4567
+        }
+    }
+}
