@@ -1,20 +1,38 @@
-{
-    "MODBUS over RS-485": {
-        "device name": "Pump VFD",
-        "comms": {
-            "com port": "COM4",
-            "baudrate": 9600,
-            "bits": 8,
-            "parity": "N",
-            "stopbits": 1,
-            "serverID": 5
+{"SAFL Confluence Node 1":
+    {
+        "Active Interfaces":["Massa RS-485"],
+        "MODBUS over RS-485": {
+            "device name": "Pump VFD",
+            "comms": {
+                "com port": "COM3",
+                "baudrate": 9600,
+                "bits": 8,
+                "parity": "N",
+                "stopbits": 1,
+                "serverID": 5
+            },
+            "publish": {
+                "interval_hr":0,
+                "interval_min":0,
+                "interval_sec": 1,
+                "VFD Freq Set Point": 400001,
+                "VFD Current Freq": 400002,
+                "Running": 1,
+                "Run Direction": 1
+            }
         },
-        "publish": {
-            "VFD Freq Set Point": 400001,
-            "VFD Current Freq": 400002,
-            "Running": 1,
-            "Run Direction": 4567,
-            "null": null
+        "Massa RS-485": {
+            "device names": ["Massa 1"],
+            "comms": {
+                "com port": "COM3",
+                "ids":[1],
+                "offsets_mm":[0]
+            },
+            "publish":{
+                "interval_hr":0,
+                "interval_min":0,
+                "interval_sec":10
+            }
         }
     }
 }
