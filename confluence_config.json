@@ -29,9 +29,9 @@
                 "offsets_mm":[0]
             },
             "publish":{
-                "interval_hr":0,
-                "interval_min":0,
-                "interval_sec":10
+                "interval_hr":"*",
+                "interval_min":"*",
+                "interval_sec":"*/5"
             }
         }
     }

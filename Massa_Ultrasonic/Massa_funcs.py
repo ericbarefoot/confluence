@@ -78,16 +78,16 @@ class massa():
                     dist_mm = float('nan')
 
                 # Compute the depth of the water:
-                self.water_depth_array.append(self.offsets[i]-dist_mm)
+                self.water_depth_array.append(round(self.offsets[i]-dist_mm,2))
                 
 
                 ## Add measurements to arrays                
                 self.massa_id_array.append(massa_id)
                 self.error_array.append(error)
-                self.dist_mm_array.append(dist_mm)
+                self.dist_mm_array.append(round(dist_mm,2))
                 self.target_array.append(target)
                 self.strength_array.append(strength)
-                self.massa_temperature_array.append(massa_temperature)
+                self.massa_temperature_array.append(round(massa_temperature,1))
                 
                 
                 time.sleep(0.05)
@@ -103,16 +103,17 @@ class massa():
                 self.massa_temperature_array =  [float('nan')]*len(self.ids)
                 self.water_depth_array =        [float('nan')]*len(self.ids)
 
-            status = {"timestamp":datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                      "Massa IDs":self.massa_id_array,
-                      "Errors": self.error_array,
+            self.status = {"timestamp":datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                      "massa IDs":self.massa_id_array,
+                      "errors": self.error_array,
                       "dist_mm": self.dist_mm_array,
+                      "signal_strength":self.strength_array,
                       "target acquired":self.target_array,
                       "massa temperature":self.massa_temperature_array,
                       "offsets":self.offsets,
                       "water_depth":self.water_depth_array
                       }
-            return status
+            # return status
             
     def update_offset(self,massa_id,new_offset):
         ids = np.array(self.ids)
