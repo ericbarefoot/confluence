@@ -1,9 +1,7 @@
-import Massa_Ultrasonic
+import Interfaces.Massa_Ultrasonic as Massa_Ultrasonic
 import json
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.events import EVENT_JOB_EXECUTED
-import time
-# import importlib
 
 scheduler = BlockingScheduler()
 config_file_path = './confluence_config.json'
@@ -15,8 +13,7 @@ def schedule_jobs():
     node = configs['Node Name']
     active_interfaces = [interface.lower() for interface in configs['Active Interfaces']]
 
-
-    # Add other jobs
+    # Add A job for active interfaces.
     if len([string for string in active_interfaces if 'massa' in string.lower()]) >0: # if any of the active interfaces have the word "massa" in them
         scheduler.add_job(**Massa_Ultrasonic.job_configuration)
 
