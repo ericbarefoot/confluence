@@ -5,8 +5,9 @@ import numpy as np
 import datetime
 
 class massa():
-    def __init__(self,comm_port,ids,offset_array):
+    def __init__(self,comm_port,ids,names,offset_array):
         self.ids = ids # array of massa id numbers
+        self.names = names
         self.offsets = offset_array
         self.comm_errors = [0]*len(self.ids)
         # self.stop_signal = stop_signal
@@ -104,6 +105,7 @@ class massa():
                 self.water_depth_array =        [float('nan')]*len(self.ids)
 
             self.status = {"timestamp":datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                      "device names":self.names,
                       "massa IDs":self.massa_id_array,
                       "errors": self.error_array,
                       "dist_mm": self.dist_mm_array,

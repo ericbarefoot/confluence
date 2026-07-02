@@ -12,8 +12,8 @@ def schedule_jobs():
     with open(config_file_path,'r') as fid:
         configs = json.load(fid)
     
-    node = list(configs.keys())[0]
-    active_interfaces = [interface.lower() for interface in configs[node]['Active Interfaces']]
+    node = configs['Node Name']
+    active_interfaces = [interface.lower() for interface in configs['Active Interfaces']]
 
 
     # Add other jobs

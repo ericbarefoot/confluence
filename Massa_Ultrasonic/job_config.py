@@ -5,16 +5,13 @@ from MQTT import broker
 with open("./confluence_config.json",'r') as fid:
     configs = json.load(fid)
 
-node = list(configs.keys())[0]
+node = configs['Node Name']
+interface = [string for string in list(configs.keys()) if 'massa' in string.lower()][0]
 
-print(configs[node].keys())
+comms_configs = configs[interface]['comms']
+publish_configs = configs[interface]['publish']
 
-interface = [string for string in list(configs[node].keys()) if 'massa' in string.lower()][0]
-
-comms_configs = configs[node][interface]['comms']
-publish_configs = configs[node][interface]['publish']
-
-massas = massa(comms_configs['com port'],comms_configs["ids"],comms_configs["offsets_mm"])
+massas = massa(comm_port=comms_configs['com port'],ids=comms_configs["ids"],names=configs[interface]['device names'],offset_array=configs[interface]["offsets_mm"])
 
 def task():
     massas.poll_status()
