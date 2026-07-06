@@ -22,10 +22,11 @@ class mqtt_client():
         self.counter = 0
 
     def on_message(self,client,userdata,msg):
-        self.data[msg.topic] = {}
+        # print(msg.topic)
+        # self.data[msg.topic] = {}
         # print(msg.topic)
         self.time_of_last_message = datetime.datetime.now()
-        msg_dict = json.loads(msg.payload.decode('utf-8'))
+        # msg_dict = json.loads(msg.payload.decode('utf-8'))
 
     def publish_message(self,topic,payload):
         self.client.publish(topic=topic,payload=payload)
