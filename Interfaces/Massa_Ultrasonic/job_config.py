@@ -2,13 +2,14 @@ from .Massa_funcs import massa
 import json
 from Interfaces.MQTT import broker
 import pandas as pd
+from Interfaces.Scheduler import scheduler
 
 with open("./confluence_config.json",'r') as fid:
     configs = json.load(fid)
 
 # Pull out a few commonly used parameters from the config file
 node = configs['Node Name']
-interface = [string for string in list(configs.keys()) if 'massa' in string.lower()][0]
+interface = 'Massa_Ultrasonic'
 comms_configs = configs[interface]['comms']
 publish_configs = configs[interface]['publish']
 
@@ -20,7 +21,7 @@ def task():
     This function is the task that will be called each time the scheduled job is executed. 
     This function handle is the value that should be entered for the "func" parameter of scheduler.add_job()
 
-    Parameters: 
+    Arguments: 
     none
 
     Returns:
@@ -39,3 +40,5 @@ job_configuration = {
     "second":publish_configs['interval_sec'],
     "id":"Massa RS-485"
 }
+
+scheduler.add_job(**job_configuration)

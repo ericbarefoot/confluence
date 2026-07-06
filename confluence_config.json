@@ -1,7 +1,7 @@
 {
     "Node Name": "SAFL Confluence Node 1",
     "Active Interfaces": [
-        "Massa RS-485"
+        "Massa_Ultrasonic"
     ],
     "MODBUS over RS-485": {
         "device name": "Pump VFD",
@@ -23,7 +23,7 @@
             "Run Direction": 1
         }
     },
-    "Massa RS-485": {
+    "Massa_Ultrasonic": {
         "device names": [
             "Mississippi River Level"
         ],
