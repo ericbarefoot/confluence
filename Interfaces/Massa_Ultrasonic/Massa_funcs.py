@@ -104,7 +104,7 @@ class massa():
                 self.massa_temperature_array =  [float('nan')]*len(self.ids)
                 self.water_depth_array =        [float('nan')]*len(self.ids)
 
-            self.status = {"timestamp":datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            self.status = {"timestamp":datetime.datetime.now().isoformat(timespec='milliseconds'),
                       "device names":self.names,
                       "massa IDs":self.massa_id_array,
                       "errors": self.error_array,

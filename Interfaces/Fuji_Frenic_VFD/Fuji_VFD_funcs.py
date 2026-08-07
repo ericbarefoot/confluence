@@ -1,12 +1,39 @@
 import time
-from tkinter import E
 import minimalmodbus
-import json
+import datetime
+
+def function_code_to_register(function_code: str):
+    function_code = function_code.upper()
+
+    fc_dict = {
+        "F":0x00,
+        "E":0x01,
+        "C":0x02,
+        "P":0x03,
+        "H":0x04,
+        "S":0x07,
+        "M":0x08,
+        "Y":0x0E
+    }
+
+    high_byte = fc_dict[function_code[0]]
+    low_byte = f"{int(function_code[1:]):02x}"
+
+    hex_code = f"{high_byte:02x}{low_byte}"
+
+    register_address = int(hex_code,16)
+
+    return register_address
+    
 
 class VFD():
     def __init__(self,comm_port,server_id,baudrate,bytesize,parity,stopbits,timeout):
         try: 
-            self.comm = minimalmodbus.Instrument(comm_port, server_id, baudrate,bytesize,parity,stopbits, debug=False) 
+            self.comm = minimalmodbus.Instrument(comm_port, server_id, debug=False)
+            self.comm.serial.baudrate = baudrate
+            self.comm.serial.bytesize = bytesize
+            self.comm.serial.parity = parity
+            self.comm.serial.stopbits = stopbits
             self.comm.serial.timeout = timeout   # seconds
             self.comm.mode = minimalmodbus.MODE_RTU   # rtu or ascii mode
             self.comm_status  = 'VFD Com Port Found: '+comm_port
@@ -69,6 +96,7 @@ class VFD():
               108: 'Machine Life (accumulated operation hours)',
               109: 'Machine Life (Number of starting times)',
               254: 'Simulated Error'}
+        
 
 
     def poll_state(self):
@@ -157,36 +185,70 @@ class VFD():
         except Exception as e:
             print(e)
         # self.comm.write_bit(2,1,functioncode=5)
+
+    def poll_monitoring(self):
+        try:
+            m_codes = self.comm.read_registers(registeraddress=function_code_to_register("M01"),number_of_registers=12)
+            self.freq_reference_perc         = m_codes[0]/20000
+            self.frequency_reference    = m_codes[4]/100
+            self.output_freq_perc       = m_codes[5]/20000
+            self.output_freq            = m_codes[8]/100
+            self.input_power            = m_codes[9]/100
+            self.output_current_effective = m_codes[10]/100
+            self.output_voltage_effective = m_codes[11]/10
+
+            self.heat_sink_temp = self.comm.read_register(function_code_to_register('M62'),0)
+
+
+        except Exception as e:
+            print('\nError Polling Monitoring Data:')
+            print(f"{e}\n")
    
     def poll_status(self):
         self.poll_state()
         self.poll_setpoint()
+        self.poll_monitoring()
 
         self.status = {
+            "timestamp":datetime.datetime.now().isoformat(timespec='milliseconds'),
             "com errors":self.comm_errors,
             "state":self.state_message,
-            "freq setpoint":self.setpoint
+            "freq setpoint":f"{self.setpoint:0.2f} Hz",
+            "freq perc of max":f"{self.freq_reference_perc*100:0.2f} %",
+            "freq reference":f"{self.frequency_reference:0.2f} Hz",
+            "output freq":f"{self.output_freq:0.2f} Hz",
+            "input power":f"{self.input_power:0.2f} kW?",
+            "output current":f"{self.output_current_effective} amps",
+            "output voltage":f"{self.output_voltage_effective} volts",
+            "heat sink temperature":f"{self.heat_sink_temp} degC"
         }
+
+        print(self.status)
 
 
 if __name__ == '__main__':
-    fuji_vfd = VFD('COM17',1)
+    # for i in range(1,13):
+    #     reg = function_code_to_register(f'M{i}')
+    #     print(reg)
 
-    setpoint = float(input('Enter Freq Setpoint: '))
+    fuji_vfd = VFD('COM3',1,19200,8,'N',2,0.1)
 
-    fuji_vfd.send_setpoint(setpoint)
+    # setpoint = float(input('Enter Freq Setpoint: '))
+    # fuji_vfd.send_setpoint(setpoint)
 
-    input('Press Enter to Start Motor')
-    fuji_vfd.start_motor()
+    # input('Press Enter to Start Motor')
+    # fuji_vfd.start_motor()
 
     try:
         while True:
-            fuji_vfd.poll_status()
-            print(f'Status: {fuji_vfd.state_message}')
-            print(f'Setpoint: {fuji_vfd.setpoint}')
+            fuji_vfd.poll_monitoring()
+            print(f"heat sink temp: {fuji_vfd.heat_sink_temp}")
+            # fuji_vfd.poll_status()
+            # print(f'Status: {fuji_vfd.state_message}')
+            # print(f'Setpoint: {fuji_vfd.setpoint}')
             time.sleep(1)
             # jets_s.clear_faults()
             # time.sleep(0.5)
     except KeyboardInterrupt:
         print('Stopping')
-        fuji_vfd.stop_motor()
+        # fuji_vfd.stop_motor()

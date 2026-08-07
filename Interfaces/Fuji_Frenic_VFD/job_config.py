@@ -56,15 +56,24 @@ def task():
     broker.publish_message(topic=f"{node}/{interface}",payload=pd.Series(frenic_vfd.status).to_json())
     # print(pd.Series(frenic_vfd.status).to_json())
 
+if publish_configs['type'] == 'cron':
+    job_configuration = {
+        "func":task,
+        "args":[],
+        "trigger":"cron",
+        "hour":publish_configs['interval_hr'],
+        "minute":publish_configs['interval_min'],
+        "second":publish_configs['interval_sec'],
+        "id":"frenic_vfd"
+    }
+elif publish_configs['type'] =='interval':
+        job_configuration = {
+        "func":task,
+        "args":[],
+        "trigger":"interval",
+        "seconds":publish_configs['seconds'],
+        "id":"frenic_vfd"
+    }
 
-job_configuration = {
-    "func":task,
-    "args":[],
-    "trigger":"cron",
-    "hour":publish_configs['interval_hr'],
-    "minute":publish_configs['interval_min'],
-    "second":publish_configs['interval_sec'],
-    "id":"frenic_vfd"
-}
 
 scheduler.add_job(**job_configuration)

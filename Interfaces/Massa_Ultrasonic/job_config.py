@@ -37,15 +37,24 @@ def task():
     massas.poll_status()
     broker.publish_message(topic=f"{node}/{interface}",payload=pd.Series(massas.status).to_json())
     # print(pd.Series(massas.status).to_json()) # Using the pandas to_json instead of json.dumps handles converting to NAN to null.  JSON format doesn't support NANs.
+if publish_configs['type'] == 'cron':
+    job_configuration = {
+        "func":task,
+        "args":[],
+        "trigger":"cron",
+        "hour":publish_configs['interval_hr'],
+        "minute":publish_configs['interval_min'],
+        "second":publish_configs['interval_sec'],
+        "id":"Massa_Ultrasonic"
+    }
+elif publish_configs['type'] =='interval':
+        job_configuration = {
+        "func":task,
+        "args":[],
+        "trigger":"interval",
+        "seconds":publish_configs['seconds'],
+        "id":"Massa_Ultrasonic"
+    }
 
-job_configuration = {
-    "func":task,
-    "args":[],
-    "trigger":"cron",
-    "hour":publish_configs['interval_hr'],
-    "minute":publish_configs['interval_min'],
-    "second":publish_configs['interval_sec'],
-    "id":"Massa_Ultrasonic"
-}
 
 scheduler.add_job(**job_configuration)

@@ -1,14 +1,13 @@
 {
     "Node Name": "SAFL Confluence Node 1",
     "Active Interfaces": [
-        "Massa_Ultrasonic",
-        "Fuji_Frenic_VFD"
+        "Massa_Ultrasonic"
     ],
     "Fuji_Frenic_VFD": {
         "device name": "Pump VFD",
         "comms": {
-            "com port": "COM5",
-            "serverID": 5,
+            "com port": "COM3",
+            "serverID": 1,
             "baudrate": 19200,
             "bytesize": 8,
             "parity": "N",
@@ -16,6 +15,7 @@
             "timeout":0.1
         },
         "publish": {
+            "type":"cron",
             "interval_hr": "*",
             "interval_min": "*",
             "interval_sec": "*/5"
@@ -29,15 +29,14 @@
             0
         ],
         "comms": {
-            "com port": "COM3",
+            "com port": "COM4",
             "ids": [
                 1
             ]
         },
         "publish": {
-            "interval_hr": "*",
-            "interval_min": "*",
-            "interval_sec": "*/5"
+            "type":"interval",
+            "seconds":0.1
         }
     }
 }
