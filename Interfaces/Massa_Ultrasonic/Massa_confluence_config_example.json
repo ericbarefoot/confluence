@@ -1,0 +1,24 @@
+{
+    "Node Name": "SAFL Confluence Node 1",
+    "Active Interfaces": [
+        "Massa_Ultrasonic"
+    ],
+    "Massa_Ultrasonic": {
+        "device names": [
+            "Mississippi River Level"
+        ],
+        "offsets_mm": [
+            0
+        ],
+        "comms": {
+            "com port": "COM4",
+            "ids": [
+                1
+            ]
+        },
+        "publish": {
+            "type":"interval",
+            "seconds":0.1
+        }
+    }
+}

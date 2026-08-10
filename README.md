@@ -1,5 +1,5 @@
 # confluence
-A library of code to convert signals (analog, serial, modbus, etc.) to MQTT that can be integrated into the Sandpiper ecosystem. The name *confluence* evokes the goal of this project which is to bring together multiple streams of data into one unified stream. 
+Convert signals (analog, serial, modbus, etc.) to MQTT that can be integrated into the Sandpiper ecosystem. The name *confluence* evokes the goal of this project which is to bring together multiple streams of data into one unified stream. 
 
 ## Network Topology
 ```
@@ -45,6 +45,13 @@ Confluence was written with extensibility in mind. To add a new device type to c
 - a `device_funcs.py` file that contains functions and methods to establish communications with the sensor/device, retreive data and/or send commands to the senor/device.
 - `job_config.py` file that contains the task that is run at the interval given in `confluence_config.json`. This file contains the functions to publish data to the MQTT broker and/or process commands receieved over MQTT. 
 
+**No changes to other code are necessary when adding a new interface.** The main script `confluence_daemon.py` reads the `confluence_config.json` file and imports the appropriate packages for each "active interface". For this reason, its important that references to the interface in the config json are spelled the exact same way (case sensitive) as the package name (the directory name in the *Interfaces* folder).
+
+An example of the `confluence_config.json` file should be included in the package directory so that users know how to properly add the configuration to the config json to use the new interface. 
+
+### Read Only Example
 An example of read-only interface can be found in [`Interfaces/Massa_Ultrasonic`](./Interfaces/Massa_Ultrasonic/). This interface polls a Massa Ultrasonic Distance sensor at the interval set in `confluence_config.json` and publishes the data to the MQTT broker. 
 
+### Read/Write Example
 An example of a read-write interface can be found in [`Interfaces/Fuji_Frenic_VFD`](./Interfaces/Fuji_Frenic_VFD/).  This interface polls the status of a motor variable frequency drive (VFD) at the interval set in `confluence_config.json` and publishes the data to the MQTT broker, just like the Massa interface.  However, this interface also contains instructions in the `job_config.py` file to subscribe to a "commands" topic on the MQTT broker and to respond to commands recieved in that topic.  For example, if the confluence node receives a message in the commands topic that contains the subtopic "send_setpoint" the node will send a new frequency setpoint to the VFD. The frequency setpoint value is contained in the payload of the MQTT message with the topic `.../commands/send_setpoint`. Some commands do not require values in the payload of the message. For example if the node receives the command `start_motor` as a subtopic in the commands topic, it sends the modbus command to the VFD to start the motor. Any value contained in the payload of the message (if there is one) is ignored. 
+
