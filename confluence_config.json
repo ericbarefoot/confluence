@@ -1,0 +1,42 @@
+{
+    "Node Name": "SAFL Confluence Node 1",
+    "Active Interfaces": [
+        "Massa_Ultrasonic"
+    ],
+    "Fuji_Frenic_VFD": {
+        "device name": "Pump VFD",
+        "comms": {
+            "com port": "COM3",
+            "serverID": 1,
+            "baudrate": 19200,
+            "bytesize": 8,
+            "parity": "N",
+            "stopbits": 2,
+            "timeout":0.1
+        },
+        "publish": {
+            "type":"cron",
+            "interval_hr": "*",
+            "interval_min": "*",
+            "interval_sec": "*/5"
+        }
+    },
+    "Massa_Ultrasonic": {
+        "device names": [
+            "Mississippi River Level"
+        ],
+        "offsets_mm": [
+            0
+        ],
+        "comms": {
+            "com port": "COM4",
+            "ids": [
+                1
+            ]
+        },
+        "publish": {
+            "type":"interval",
+            "seconds":0.1
+        }
+    }
+}
