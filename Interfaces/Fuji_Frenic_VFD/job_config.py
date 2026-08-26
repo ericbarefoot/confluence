@@ -13,7 +13,7 @@ interface = "Fuji_Frenic_VFD"
 comms_configs = configs[interface]['comms']
 publish_configs = configs[interface]['publish']
 
-# instantiate the VFD object and open the com port to establish communication with the device. 
+# instantiate the VFD object and open the com port to establish communication with the device.
 frenic_vfd = VFD(
     comm_port =comms_configs['com port'],
     server_id =comms_configs['serverID'],
@@ -39,6 +39,53 @@ def on_frenic_message(client,userdata,message):
         frenic_vfd.clear_faults()
 
 broker.client.message_callback_add(f"{node}/{interface}/commands/#",on_frenic_message)
+
+# Request/reply command handling for laguna's MQTT transport (see
+# laguna.mqtt.request_reply): laguna publishes a JSON envelope
+# {"request_id", "command", "args"} on the exact "{node}/{interface}/commands"
+# topic (not a "/commands/<subtopic>" wildcard like on_frenic_message above)
+# and blocks for a reply on "{node}/{interface}/replies" echoing the same
+# request_id. This is additive — the legacy subtopic handler above is
+# untouched for any other existing publisher.
+_COMMAND_HANDLERS = {
+    "set_setpoint_hz": lambda args: frenic_vfd.send_setpoint(args["freq_hz"]),
+    "start_motor": lambda args: frenic_vfd.start_motor(),
+    "stop_motor": lambda args: frenic_vfd.stop_motor(),
+    "clear_faults": lambda args: frenic_vfd.clear_faults(),
+}
+
+def on_frenic_request(client, userdata, message):
+    try:
+        envelope = json.loads(message.payload)
+        request_id = envelope["request_id"]
+        command = envelope["command"]
+        args = envelope.get("args", {})
+    except (json.JSONDecodeError, KeyError) as e:
+        print(f"Fuji_Frenic_VFD: malformed request envelope: {e}")
+        return
+
+    handler = _COMMAND_HANDLERS.get(command)
+    if handler is None:
+        print(f"Fuji_Frenic_VFD: unknown command {command!r}")
+        broker.publish_message(
+            topic=f"{node}/{interface}/replies",
+            payload=json.dumps({"request_id": request_id, "ok": False}),
+        )
+        return
+
+    try:
+        handler(args)
+        ok = True
+    except Exception as e:
+        print(f"Fuji_Frenic_VFD: command {command!r} failed: {e}")
+        ok = False
+
+    broker.publish_message(
+        topic=f"{node}/{interface}/replies",
+        payload=json.dumps({"request_id": request_id, "ok": ok}),
+    )
+
+broker.client.message_callback_add(f"{node}/{interface}/commands", on_frenic_request)
 
 def task():
     """

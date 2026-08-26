@@ -1,0 +1,16 @@
+{
+    "Node Name": "SAFL Confluence Node 1",
+    "Active Interfaces": [
+        "Teknic_ClearCore"
+    ],
+    "Teknic_ClearCore": {
+        "comms": {
+            "com port": "COM5",
+            "baudrate": 9600
+        },
+        "publish": {
+            "type": "interval",
+            "seconds": 0.5
+        }
+    }
+}

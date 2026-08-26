@@ -38,5 +38,15 @@
             "type":"interval",
             "seconds":0.1
         }
+    },
+    "Teknic_ClearCore": {
+        "comms": {
+            "com port": "COM5",
+            "baudrate": 9600
+        },
+        "publish": {
+            "type": "interval",
+            "seconds": 0.5
+        }
     }
 }
