@@ -203,6 +203,15 @@ class VFD():
         except Exception as e:
             print('\nError Polling Monitoring Data:')
             print(f"{e}\n")
+            self.comm_errors = self.comm_errors + 1
+            self.freq_reference_perc         = float('nan')
+            self.frequency_reference    = float('nan')
+            self.output_freq_perc       = float('nan')
+            self.output_freq            = float('nan')
+            self.input_power            = float('nan')
+            self.output_current_effective = float('nan')
+            self.output_voltage_effective = float('nan')
+            self.heat_sink_temp = float('nan')
    
     def poll_status(self):
         self.poll_state()
