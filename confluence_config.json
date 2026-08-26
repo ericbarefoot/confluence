@@ -6,7 +6,7 @@
     "Fuji_Frenic_VFD": {
         "device name": "Pump VFD",
         "comms": {
-            "com port": "fuji_vfd",
+            "com port": "/dev/fuji_vfd",
             "serverID": 1,
             "baudrate": 19200,
             "bytesize": 8,
