@@ -28,15 +28,26 @@ def on_frenic_message(client,userdata,message):
     print(f"Messaged Received on Topic:{message.topic}.  Message: {message.payload.decode()}")
     subtopic = message.topic.split('/')[-1] # get the final subtopic of the message.
 
-    if subtopic == "send_setpoint":
-        print('\n\n Send Setpoint Command Received!\n\n')
-        frenic_vfd.send_setpoint(message.payload)
-    elif subtopic == "start_motor":
-        frenic_vfd.start_motor()
-    elif subtopic == "stop_motor":
-        frenic_vfd.stop_motor()
-    elif subtopic == "clear_faults":
-        frenic_vfd.clear_faults()
+    # start_motor/stop_motor/clear_faults/send_setpoint now raise on a
+    # Modbus comm failure (previously swallowed silently) so the
+    # request/reply handler below can report a real ok:False — this
+    # legacy paho message_callback_add path has no exception boundary of
+    # its own, so a comm failure here needs to be caught explicitly
+    # rather than escaping into paho's message-dispatch thread, which
+    # would otherwise die silently and stop processing MQTT messages
+    # entirely (no systemd restart, since the process itself keeps running).
+    try:
+        if subtopic == "send_setpoint":
+            print('\n\n Send Setpoint Command Received!\n\n')
+            frenic_vfd.send_setpoint(message.payload)
+        elif subtopic == "start_motor":
+            frenic_vfd.start_motor()
+        elif subtopic == "stop_motor":
+            frenic_vfd.stop_motor()
+        elif subtopic == "clear_faults":
+            frenic_vfd.clear_faults()
+    except Exception as e:
+        print(f"Fuji_Frenic_VFD: legacy command {subtopic!r} failed: {e}")
 
 broker.client.message_callback_add(f"{node}/{interface}/commands/#",on_frenic_message)
 

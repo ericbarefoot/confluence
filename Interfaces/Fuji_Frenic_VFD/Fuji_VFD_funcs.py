@@ -157,6 +157,7 @@ class VFD():
         except Exception as e:
             # print(e)
             self.comm_errors = self.comm_errors + 1
+            raise
 
     def start_motor(self):
         start_command = int(b'0000000000000001',2)
@@ -165,6 +166,7 @@ class VFD():
         except Exception as e:
             self.comm_errors = self.comm_errors + 1
             print(e)
+            raise
 
     def stop_motor(self):
         stop_command = int(b'0000000000000000',2)
@@ -173,6 +175,7 @@ class VFD():
         except Exception as e:
             print(e)
             self.comm_errors = self.comm_errors + 1
+            raise
 
     def clear_faults(self):
         # self.comm.write_bit(2,1,functioncode=5)
@@ -184,6 +187,7 @@ class VFD():
             self.comm.write_register(1798,command,0)
         except Exception as e:
             print(e)
+            raise
         # self.comm.write_bit(2,1,functioncode=5)
 
     def poll_monitoring(self):
