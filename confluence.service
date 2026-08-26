@@ -6,9 +6,9 @@ Requires=mosquitto.service
 
 [Service]
 Type=simple
-User=eric
-WorkingDirectory=/home/eric/confluence
-ExecStart=/home/eric/confluence/.venv/bin/python confluence_daemon.py
+User=oak
+WorkingDirectory=/home/oak/confluence
+ExecStart=/home/oak/confluence/.lagunavenv/bin/python confluence_daemon.py
 Restart=on-failure
 RestartSec=5
 
