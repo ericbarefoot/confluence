@@ -17,10 +17,21 @@ from safl_ocean_hardware.motor import TeknicMotor
 
 class TeknicClearCore:
     def __init__(self, comm_port, baudrate=9600):
-        self.motor = TeknicMotor(comm_port, baudrate)
-        self.connected = self.motor.connect()
         self.weir_status = {}
         self.valve_status = {"qin_open": False, "qaux_open": False}
+        try:
+            self.motor = TeknicMotor(comm_port, baudrate)
+            self.connected = self.motor.connect()
+        except Exception as e:
+            # A missing/wrong com_port must not take down the whole daemon
+            # at import time — Massa_Ultrasonic and Fuji_Frenic_VFD are
+            # independent interfaces and should keep running even if this
+            # one's hardware isn't present (see Massa_funcs.py's __init__
+            # for the same pattern).
+            print(f"Unable to open Teknic ClearCore Com Port: {comm_port}")
+            print(e)
+            self.motor = None
+            self.connected = False
 
     def poll_weir_status(self):
         """Poll the ClearCore and update self.weir_status for publishing.
@@ -30,6 +41,13 @@ class TeknicClearCore:
         shape laguna.weir.controller.SaflWeirController expects on its
         status topic.
         """
+        if self.motor is None:
+            self.weir_status = {
+                "timestamp": datetime.datetime.now().isoformat(timespec="milliseconds"),
+                "elevation_mm": None,
+                "is_moving": False,
+            }
+            return
         raw = self.motor.poll_status()
         self.weir_status = {
             "timestamp": datetime.datetime.now().isoformat(timespec="milliseconds"),
@@ -53,6 +71,8 @@ class TeknicClearCore:
 
     def handle_weir_command(self, command, args):
         """Execute a weir-gate command. Returns a reply dict (without request_id)."""
+        if self.motor is None:
+            return {"ok": False, "error": "not connected"}
         if command == "set_position":
             self.motor.set_absolute_position(args["mm"])
             return {"ok": True}
@@ -81,6 +101,8 @@ class TeknicClearCore:
 
     def handle_valve_command(self, command, args):
         """Execute a flow-valve command. Returns a reply dict (without request_id)."""
+        if self.motor is None:
+            return {"ok": False, "error": "not connected"}
         if command == "set_io":
             self.motor.set_io(args["channel"], args["state"])
             if args["channel"] == 0:
