@@ -32,7 +32,19 @@ def on_weir_command(client, userdata, message):
         print(f"Teknic_ClearCore (weir): malformed request envelope: {e}")
         return
 
-    reply = clearcore.handle_weir_command(command, args)
+    try:
+        reply = clearcore.handle_weir_command(command, args)
+    except Exception as e:
+        # handle_weir_command() itself doesn't catch a comm failure from the
+        # underlying TeknicMotor call (several of its methods raise directly
+        # rather than swallowing) — this callback has no exception boundary
+        # of its own otherwise, and an uncaught exception here would escape
+        # into paho's message-dispatch thread, silently killing MQTT message
+        # processing for the whole node rather than just this command
+        # failing (see the equivalent fix in Fuji_Frenic_VFD/job_config.py's
+        # on_frenic_request).
+        print(f"Teknic_ClearCore (weir): command {command!r} failed: {e}")
+        reply = {"ok": False, "error": str(e)}
     reply["request_id"] = request_id
     broker.publish_message(topic=f"{node}/weir/replies", payload=json.dumps(reply))
 
@@ -47,7 +59,11 @@ def on_flow_valve_command(client, userdata, message):
         print(f"Teknic_ClearCore (flow_valve): malformed request envelope: {e}")
         return
 
-    reply = clearcore.handle_valve_command(command, args)
+    try:
+        reply = clearcore.handle_valve_command(command, args)
+    except Exception as e:
+        print(f"Teknic_ClearCore (flow_valve): command {command!r} failed: {e}")
+        reply = {"ok": False, "error": str(e)}
     reply["request_id"] = request_id
     broker.publish_message(topic=f"{node}/flow_valve/replies", payload=json.dumps(reply))
 
