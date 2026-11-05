@@ -44,6 +44,10 @@ def _stale_jobs():
         return [(j, now - t) for j, t in _last_ok.items() if now - t > _timeouts[j]]
 
 
+def _exit():
+    os._exit(1)  # hard exit: a thread blocked in a serial read would stall a clean shutdown
+
+
 def _run():
     while True:
         time.sleep(CHECK_PERIOD_S)
@@ -51,8 +55,14 @@ def _run():
         if stale:
             for job_id, age in stale:
                 print(f"Watchdog: no successful poll from {job_id} in {age:.0f}s; exiting for restart", flush=True)
-            os._exit(1)
+            _exit()
 
 
 def start():
+    """Begin monitoring. Call after all interfaces are imported and before the
+    scheduler starts, so slow imports don't count against the job timeouts."""
+    with _lock:
+        now = time.monotonic()
+        for job_id in _last_ok:
+            _last_ok[job_id] = now
     threading.Thread(target=_run, name="confluence-watchdog", daemon=True).start()
