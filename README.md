@@ -24,49 +24,67 @@ Convert signals (analog, serial, modbus, etc.) to MQTT that can be integrated in
 
 ```
 ## Requirements
-You will need a TCP network that you can add devices to and an MQTT broker that is accessible on that network. If you don't already have an MQTT broker I recommend setting up a Raspberry Pi as a broker using Eclipse Mosquitto.  Instructions for doing this can be found [here](mosquitto_raspberry_pi_setup.md). Each confluence "node" was envisioned to be a Raspberry Pi, but really any computer that can run Python could be used. Each node will need to have access to the MQTT broker over the TCP network and be able to connect to the sensor or device you would like to get data from/control.  For example if you want to get data from a Massa Ultrasonic distance sensor you will need to have USB to RS485 converter plugged into your node and properly wired to the sensor. 
+You will need a TCP network that you can add devices to and an MQTT broker that is accessible on that network. If you don't already have an MQTT broker I recommend setting up a Raspberry Pi as a broker using Eclipse Mosquitto.  Instructions for doing this can be found [here](mosquitto_raspberry_pi_setup.md). Each *confluence* "node" was envisioned to be a Raspberry Pi, but really any systemd-based Linux device could be used. Each node will need to have access to the MQTT broker over the TCP network and be able to connect to the sensor or device you would like to get data from/control.  For example if you want to get data from a Massa Ultrasonic distance sensor you will need to have USB to RS485 converter plugged into your node and properly wired to the sensor. 
 
 ## Installation
-Clone or fork this repo onto each device that will be used as a node on the confluence network. All required packages are listed in the `requirements.txt` file.  Install using the command: `pip install -r requirements.txt`.
+Clone or fork this repo onto each device that will be used as a node on the *confluence* network. 
 
-
-## Running confluence
-You will need to create a `credentials.py` file that lists the IP address and port number for your MQTT broker. An example of this file can be found in `credentials_example.py`. You will also need to update file `confluence_config.json` for each specific node. This file tells the confluence node which devices are attached to the node (Active Interfaces), gives necessary settings to communicate with the sensor/device (com port, baudrate, etc.) and sets the rate to publish data to the MQTT broker. 
-
-Run confluence by calling `python confluence_daemon.py`. Best practice would be to set this script to start when the Raspberry Pi (or other device) starts.
-
-### Setup scripts
-
-Two scripts in `scripts/` automate the fiddlier, easy-to-get-wrong parts
-of setting up a new node — both are safe to re-run if you need to change
-something later:
+Two scripts in `scripts/` automate the majority of setting up a new node — both are safe to re-run if you need to change
+something later.  When setting up a new node, run both of these scripts.
 
 - **`scripts/setup_udev_aliases.sh`** — gives this node's serial devices
   stable `/dev` names (e.g. `/dev/massa_ultrasonic`) instead of raw
   `/dev/ttyUSB*` names that can shuffle across reboots/re-enumeration.
   Takes the alias-to-device mapping as command-line arguments rather than
   hardcoding one hub's serial numbers, so the same script works on any
-  node — run `./scripts/setup_udev_aliases.sh --list` (no sudo needed) to
-  find this machine's own device serial numbers first.
-- **`scripts/setup_confluence_service.sh`** — run as root on the node
-  itself: creates a venv, installs `requirements.txt` into it, scaffolds
-  `credentials.py` from the example if it doesn't exist yet, and
+  node.
+
+  Run: `./scripts/setup_udev_aliases.sh --list` (no sudo needed) on the node to list
+  serial devices that are currently connected to the node. You should get a response like this: 
+
+  ```
+  Serial devices currently visible on this machine:
+
+  /dev/ttyUSB1  ID_SERIAL_SHORT=BG00DTH3  ID_USB_INTERFACE_NUM=00
+
+  Pass ALIAS=SERIAL or ALIAS=SERIAL:IFNUM pairs to install rules using these.
+  ```
+
+  Identify which device is connected to that serial port. If you have multiple serial devices connected, you may want to plug them in one at a time so its easier to identify which is which. To assign that serial port an alias run the command:
+
+  `sudo ./scripts/setup_udev_aliases.sh [ALIAS]=[ID_SERIAL_SHORT]`
+
+  For example, if I'm setting up a Massa ultrasonic distance sensor and I received the port list response shown above I would run the command: 
+  `sudo ./scripts/setup_udev_aliases.sh massa_ultrasonic=BG00DTH3`
+
+  Now you can configure the `confluence_config.json` for that device with com port information `"com port": "/dev/[ALIAS]"` or for the example with the Massa: `com port: "/dev/massa_ultrasonic`
+
+- **`scripts/setup_confluence_service.sh`** configures    *confluence* to run as a service on the Raspberry Pi. To use, run as root on the node itself (`sudo ./scripts/setup_confluence_service.sh --user root`) which creates a venv, installs `requirements.txt` into it, scaffolds `credentials.py` from the example if it doesn't exist yet, and
   installs/enables a `systemd` unit templated with this machine's actual
   user and paths (rather than the one committed at the repo root, which
   is one specific deployment's hardcoded values). `--help` for options,
   including `--remote-broker` for the common case where this node doesn't
-  run its own Mosquitto.
+  run its own Mosquitto but is publishing to an MQTT broker hosted on a different device. 
 
-Neither script touches `confluence_config.json` — that file is
-per-node/per-hardware and still needs to be written by hand (or copied
-from another node's and edited) as described above.
+  After running the script, if you didn't pass the `--start` flag, you need to start the service with: `sudo systemctl start confluence`.  It will automatically start on boot if the system restarts.
+
+  If you make changes to `confluence_config.json` or any of the code you will need to restart the service with the command: `sudo systemctl restart confluence`
+
+Neither set up script touches `confluence_config.json` — that file is
+  per-node/per-hardware and still needs to be written by hand (or copied
+  from another node's and edited) as described below.
+
+## Configuring the node with `confluce_config.json`:
+You will need to update the file `confluence_config.json` for each specific node. This file tells the *confluence* node which devices are attached to the node (Active Interfaces), gives necessary settings to communicate with the sensor/device (com port, baudrate, etc.) and sets the rate to publish data to the MQTT broker. A sample of the configuration settings for each device should be included in the device's directory in the *Interfaces* folder (e.g. `confluence/Interfaces/Massa_Ultrasonic/Massa_confluence_config_example.json`)
 
 ### A note on publication intervals in `confluence_config.json`
-confluence uses the Advance Python Scheduler (APScheduler) to poll sensors at regular intervals. Two different trigger methods are currently supported in confluence: cron and interval. Cron is designed to be used for slower sample rates and triggers at nice round timestamps. For example if configured to sample 1 per minute, a cron trigger will fire at 12:00:00 and then again at 12:01:00 instead of once a minute based on the start time. Interval can be configured for intervals faster than 1 second and starts when the task is first triggered.
+*confluence* uses the Advance Python Scheduler (APScheduler) to poll sensors at regular intervals. Two different trigger methods are currently supported in *confluence*: cron and interval. Cron is designed to be used for slower sample rates and triggers at nice round timestamps. For example if configured to sample 1 per minute, a cron trigger will fire at 12:00:00 and then again at 12:01:00 instead of once a minute based on the start time. Interval can be configured for intervals faster than 1 second and starts when the task is first triggered.
 
+## Configuring the connection to the MQTT broker
+You will need to create a `credentials.py` file that lists the IP address and port number for your MQTT broker. An example of this file can be found in `credentials_example.py`, or if you already ran `scripts/setup_confluence_service.sh` one was already created for you. You will need to update the `mqtt_broker_address` field to the IP address of your MQTT broker. If the MQTT broker is running on this node, enter `'localhost'` in this field. The port number 1883 is the default port for MQTT brokers. Unless you set up a custom port number when you set up Mosquitto you shouldn't need to change this value.
 
-## Extending confluence
-Confluence was written with extensibility in mind. To add a new device type to confluence, create a new directory in the *Interfaces* folder. Within that directory you will need 3 files: 
+## Extending *confluence*
+*confluence* was written with extensibility in mind. To add a new device type to *confluence*, create a new directory in the *Interfaces* folder. Within that directory you will need 3 files: 
 - an `__init__.py` file to set up the directory as a python package
 - a `device_funcs.py` file that contains functions and methods to establish communications with the sensor/device, retreive data and/or send commands to the senor/device.
 - `job_config.py` file that contains the task that is run at the interval given in `confluence_config.json`. This file contains the functions to publish data to the MQTT broker and/or process commands receieved over MQTT. 
