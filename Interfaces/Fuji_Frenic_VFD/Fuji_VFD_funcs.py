@@ -230,13 +230,13 @@ class VFD():
             "freq perc of max":f"{self.freq_reference_perc*100:0.2f} %",
             "freq reference":f"{self.frequency_reference:0.2f} Hz",
             "output freq":f"{self.output_freq:0.2f} Hz",
-            "input power":f"{self.input_power:0.2f} kW?",
+            "input power":f"{self.input_power:0.2f} kW",
             "output current":f"{self.output_current_effective} amps",
             "output voltage":f"{self.output_voltage_effective} volts",
             "heat sink temperature":f"{self.heat_sink_temp} degC"
         }
 
-        print(self.status)
+        # print(self.status)
 
 
 if __name__ == '__main__':
